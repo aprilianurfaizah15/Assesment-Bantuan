@@ -35,7 +35,7 @@
         </div>
 
         <div class="mb-3">
-          <label>Total Skor (Otomatis)</label>
+          <label>Total Skor</label>
           <input type="number" class="form-control" value="{{ $total_skor }}" readonly>
         </div>
 
