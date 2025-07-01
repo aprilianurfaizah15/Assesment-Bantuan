@@ -1,76 +1,117 @@
 <?php
 
-// app/Livewire/SkorPage.php
 namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\PenerimaanSkor;
-use Livewire\Attributes\Layout;
 
 class SkorPage extends Component
 {
-    #[Layout('components.layouts.app')]
-    public $id_skor, $id_penerima, $skor_rumah, $skor_kendaraan, $skor_pendapatan, $skor_anak, $total_skor, $kelayakan;
+    public $id, $id_penerima;
+    public $skor_rumah = 0, $skor_kendaraan = 0, $skor_pekerjaan = 0, $skor_anak = 0;
+    public $total_skor = 0, $kelayakan;
+    public $dataSkor = [];
     public $isEdit = false;
+
+    public function mount()
+    {
+        $this->loadData();
+    }
+
+    public function loadData()
+    {
+        $this->dataSkor = PenerimaanSkor::all();
+    }
+
+    public function updated($property)
+    {
+        if (in_array($property, ['skor_rumah', 'skor_kendaraan', 'skor_pekerjaan', 'skor_anak'])) {
+            $this->calculateTotalSkor();
+        }
+    }
+
+    public function calculateTotalSkor()
+    {
+        $this->total_skor = (int)$this->skor_rumah + (int)$this->skor_kendaraan + (int)$this->skor_pekerjaan + (int)$this->skor_anak;
+    }
 
     public function submit()
     {
+        $this->calculateTotalSkor();
+
         $this->validate([
-            'id_penerima' => 'required|numeric',
-            'skor_rumah' => 'required|numeric',
-            'skor_kendaraan' => 'required|numeric',
-            'skor_pendapatan' => 'required|numeric',
-            'skor_anak' => 'required|numeric',
-            'total_skor' => 'required|numeric',
-            'kelayakan' => 'required|in:Layak,Tidak Layak',
+            'id_penerima' => 'required',
+            'skor_rumah' => 'required|integer',
+            'skor_kendaraan' => 'required|integer',
+            'skor_pekerjaan' => 'required|integer',
+            'skor_anak' => 'required|integer',
+            'kelayakan' => 'required'
         ]);
 
-        if ($this->isEdit) {
-            PenerimaanSkor::where('id', $this->id_skor)->update($this->only([
-                'id_penerima', 'skor_rumah', 'skor_kendaraan', 'skor_pendapatan', 'skor_anak', 'total_skor', 'kelayakan'
-            ]));
-            session()->flash('success', 'Data berhasil diperbarui');
+        if ($this->isEdit && $this->id) {
+            $skor = PenerimaanSkor::findOrFail($this->id);
+            $skor->update([
+                'id_penerima' => $this->id_penerima,
+                'skor_rumah' => $this->skor_rumah,
+                'skor_kendaraan' => $this->skor_kendaraan,
+                'skor_pekerjaan' => $this->skor_pekerjaan,
+                'skor_anak' => $this->skor_anak,
+                'total_skor' => $this->total_skor,
+                'kelayakan' => $this->kelayakan,
+            ]);
         } else {
-            PenerimaanSkor::create($this->only([
-                'id_penerima', 'skor_rumah', 'skor_kendaraan', 'skor_pendapatan', 'skor_anak', 'total_skor', 'kelayakan'
-            ]));
-            session()->flash('success', 'Data berhasil disimpan');
+            PenerimaanSkor::create([
+                'id_penerima' => $this->id_penerima,
+                'skor_rumah' => $this->skor_rumah,
+                'skor_kendaraan' => $this->skor_kendaraan,
+                'skor_pekerjaan' => $this->skor_pekerjaan,
+                'skor_anak' => $this->skor_anak,
+                'total_skor' => $this->total_skor,
+                'kelayakan' => $this->kelayakan,
+            ]);
         }
 
+        session()->flash('success', 'Data berhasil disimpan.');
         $this->resetForm();
+        $this->loadData();
     }
 
     public function edit($id)
     {
-        $data = PenerimaanSkor::findOrFail($id);
-        $this->id_skor = $data->id;
-        $this->id_penerima = $data->id_penerima;
-        $this->skor_rumah = $data->skor_rumah;
-        $this->skor_kendaraan = $data->skor_kendaraan;
-        $this->skor_pendapatan = $data->skor_pendapatan;
-        $this->skor_anak = $data->skor_anak;
-        $this->total_skor = $data->total_skor;
-        $this->kelayakan = $data->kelayakan;
+        $skor = PenerimaanSkor::findOrFail($id);
+        $this->id = $skor->id;
+        $this->id_penerima = $skor->id_penerima;
+        $this->skor_rumah = $skor->skor_rumah;
+        $this->skor_kendaraan = $skor->skor_kendaraan;
+        $this->skor_pekerjaan = $skor->skor_pekerjaan;
+        $this->skor_anak = $skor->skor_anak;
+        $this->total_skor = $skor->total_skor;
+        $this->kelayakan = $skor->kelayakan;
         $this->isEdit = true;
     }
 
     public function delete($id)
     {
-        PenerimaanSkor::destroy($id);
-        session()->flash('success', 'Data berhasil dihapus');
+        PenerimaanSkor::findOrFail($id)->delete();
+        session()->flash('success', 'Data berhasil dihapus.');
+        $this->loadData();
     }
 
     public function resetForm()
     {
-        $this->reset([
-            'id_skor', 'id_penerima', 'skor_rumah', 'skor_kendaraan', 'skor_pendapatan', 'skor_anak', 'total_skor', 'kelayakan', 'isEdit'
-        ]);
+        $this->id = null;
+        $this->id_penerima = '';
+        $this->skor_rumah = 0;
+        $this->skor_kendaraan = 0;
+        $this->skor_pekerjaan = 0;
+        $this->skor_anak = 0;
+        $this->total_skor = 0;
+        $this->kelayakan = '';
+        $this->isEdit = false;
     }
 
     public function render()
     {
-        return view('livewire.skor-page', [
-            'dataSkor' => PenerimaanSkor::all()
-        ]);
+        return view('livewire.skor-page');
     }
 }

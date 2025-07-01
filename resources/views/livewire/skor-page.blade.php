@@ -3,51 +3,62 @@
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">{{ $isEdit ? 'Edit Skor' : 'Form Skor Penerimaan' }}</h5>
+
       @if (session()->has('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
       @endif
 
       <form wire:submit.prevent="submit">
-        @foreach ([
-          'id_penerima' => 'ID Penerima',
-          'skor_rumah' => 'Skor Rumah',
-          'skor_kendaraan' => 'Skor Kendaraan',
-          'skor_pekerjaan' => 'Skor Pekerjaan',
-          'skor_anak' => 'Skor Anak',
-          'total_skor' => 'Total Skor'
-        ] as $field => $label)
-        <div class="row mb-3">
-          <label class="col-sm-2 col-form-label">{{ $label }}</label>
-          <div class="col-sm-10">
-            <input type="number" class="form-control" wire:model="{{ $field }}">
-          </div>
-        </div>
-        @endforeach
-
-        <div class="row mb-3">
-          <label class="col-sm-2 col-form-label">Kelayakan</label>
-          <div class="col-sm-10">
-            <select class="form-select" wire:model="kelayakan">
-              <option value="">- Pilih -</option>
-              <option value="Layak">Layak</option>
-              <option value="Tidak Layak">Tidak Layak</option>
-            </select>
-          </div>
+        <div class="mb-3">
+          <label>ID Penerima</label>
+          <input type="text" class="form-control" wire:model="id_penerima">
         </div>
 
-        <div class="text-center">
-          <button type="submit" class="btn btn-primary">{{ $isEdit ? 'Update' : 'Submit' }}</button>
-          <button type="button" class="btn btn-secondary" wire:click="resetForm">Reset</button>
+        <div class="mb-3">
+          <label>Skor Rumah</label>
+          <input type="number" class="form-control" wire:model="skor_rumah">
         </div>
+
+        <div class="mb-3">
+          <label>Skor Kendaraan</label>
+          <input type="number" class="form-control" wire:model="skor_kendaraan">
+        </div>
+
+        <div class="mb-3">
+          <label>Skor Pekerjaan</label>
+          <input type="number" class="form-control" wire:model="skor_pekerjaan">
+        </div>
+
+        <div class="mb-3">
+          <label>Skor Anak</label>
+          <input type="number" class="form-control" wire:model="skor_anak">
+        </div>
+
+        <div class="mb-3">
+          <label>Total Skor (Otomatis)</label>
+          <input type="number" class="form-control" value="{{ $total_skor }}" readonly>
+        </div>
+
+        <div class="mb-3">
+          <label>Kelayakan</label>
+          <select class="form-select" wire:model="kelayakan">
+            <option value="">- Pilih -</option>
+            <option value="Layak">Layak</option>
+            <option value="Tidak Layak">Tidak Layak</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" type="submit">{{ $isEdit ? 'Update' : 'Simpan' }}</button>
+        <button class="btn btn-secondary" type="button" wire:click="resetForm">Reset</button>
       </form>
     </div>
   </div>
 
-  <!-- TABEL -->
+  <!-- TABLE -->
   <div class="card mt-4">
     <div class="card-body">
-      <h5 class="card-title">Data Skor Penerimaan</h5>
-      <table class="table">
+      <h5 class="card-title">Data Skor</h5>
+      <table class="table table-bordered">
         <thead>
           <tr>
             <th>#</th>
@@ -65,8 +76,8 @@
               <td>{{ $item->total_skor }}</td>
               <td>{{ $item->kelayakan }}</td>
               <td>
-                <button class="btn btn-sm btn-warning" wire:click="edit({{ $item->id }})">Edit</button>
-                <button class="btn btn-sm btn-danger" wire:click="delete({{ $item->id }})" onclick="return confirm('Yakin hapus?')">Delete</button>
+                <button class="btn btn-warning btn-sm" wire:click="edit({{ $item->id }})">Edit</button>
+                <button class="btn btn-danger btn-sm" wire:click="delete({{ $item->id }})" onclick="return confirm('Yakin hapus data ini?')">Hapus</button>
               </td>
             </tr>
           @endforeach
@@ -75,4 +86,3 @@
     </div>
   </div>
 </div>
-
